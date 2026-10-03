@@ -1,0 +1,168 @@
+/* The TV board: no page chrome, fills the screen, sized for reading across a room */
+
+.tv {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 3vh 3vw;
+  display: flex;
+  flex-direction: column;
+  gap: 3vh;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.tv-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2vw;
+}
+
+.tv-title {
+  font-size: clamp(28px, 4.2vw, 64px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.tv-clock {
+  font-size: clamp(24px, 3.4vw, 52px);
+  color: var(--mist);
+}
+
+.tv-h {
+  font-size: clamp(14px, 1.5vw, 24px);
+  letter-spacing: 0.18em;
+  color: var(--lamp);
+  font-weight: 500;
+  margin-bottom: 1.6vh;
+}
+
+.tv-courts {
+  display: grid;
+  gap: 1.6vw;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+}
+
+.tv-court {
+  background: var(--panel);
+  border: 2px solid var(--lamp-dim);
+  border-radius: 14px;
+  padding: 2vh 1.6vw;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+}
+
+.tv-court-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1vw;
+}
+
+.tv-court-name {
+  font-size: clamp(20px, 2.4vw, 38px);
+  font-weight: 600;
+  color: var(--lamp);
+}
+
+.tv-court-meta {
+  font-size: clamp(12px, 1.2vw, 19px);
+  color: var(--mist);
+  text-align: right;
+}
+
+.tv-team {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1vw;
+  color: var(--mist);
+}
+
+.tv-name {
+  font-size: clamp(22px, 2.8vw, 46px);
+  word-break: break-word;
+}
+
+.tv-score {
+  font-size: clamp(40px, 6vw, 96px);
+  line-height: 1;
+  min-width: 1.4ch;
+  text-align: right;
+}
+
+.tv-win,
+.tv-court .tv-team {
+  color: var(--paper);
+}
+
+.tv-detail {
+  font-size: clamp(12px, 1.2vw, 18px);
+  color: var(--mist-dim);
+}
+
+.tv-empty {
+  font-size: clamp(22px, 2.8vw, 44px);
+  color: var(--mist-dim);
+  padding: 4vh 0;
+}
+
+.tv-empty-small {
+  font-size: clamp(16px, 1.8vw, 28px);
+  color: var(--mist-dim);
+}
+
+.tv-lower {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3vw;
+}
+
+@media (max-width: 900px) {
+  .tv-lower {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tv-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tv-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 2fr);
+  gap: 0.2vh 1.4vw;
+  padding: 1.1vh 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: clamp(16px, 1.9vw, 30px);
+}
+
+.tv-row-when {
+  color: var(--mist);
+  font-size: clamp(13px, 1.4vw, 22px);
+}
+
+.tv-row-teams {
+  color: var(--paper);
+}
+
+.tv-row-meta {
+  grid-column: 2;
+  color: var(--mist-dim);
+  font-size: clamp(11px, 1.1vw, 17px);
+}
+
+.tv-bold {
+  font-weight: 700;
+}
+
+.tv-foot {
+  margin-top: auto;
+  font-size: clamp(11px, 1.1vw, 16px);
+  color: var(--mist-dim);
+}
