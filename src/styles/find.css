@@ -1,0 +1,101 @@
+/* the find-a-tournament page */
+
+.find {
+  max-width: 560px;
+}
+
+.find-label {
+  display: block;
+  margin: var(--space-5) 0 var(--space-2);
+  color: var(--mist);
+  font-size: 14px;
+}
+
+.find-input {
+  width: 100%;
+  padding: 14px 16px;
+  font: inherit;
+  font-size: 18px;
+  color: var(--paper);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.find-input::placeholder {
+  color: var(--mist-dim);
+}
+
+.find-input:focus-visible {
+  outline: 2px solid var(--lamp-text);
+  outline-offset: 2px;
+}
+
+.find-list {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.find-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 14px 16px;
+  color: var(--paper);
+  text-decoration: none;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.find-row:hover {
+  border-color: var(--lamp-dim);
+}
+
+.find-go {
+  color: var(--lamp-text);
+  font-size: 14px;
+}
+
+.find-live-n {
+  color: var(--lamp-text);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.find-live {
+  margin-top: var(--space-6);
+}
+
+.find-h {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--mist);
+}
+
+.find-note {
+  margin-top: var(--space-3);
+  color: var(--mist);
+}
+
+.find-foot {
+  margin-top: var(--space-6);
+  color: var(--mist);
+  font-size: 15px;
+}
+
+.find-foot a {
+  color: var(--lamp-text);
+}
+
+/* the browser's own blue clear button does not belong to this design */
+.find-input::-webkit-search-cancel-button,
+.find-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
