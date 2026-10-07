@@ -1,0 +1,252 @@
+/* Arena Glass: the look of the spectator and referee pages.
+   Soft layered tiles, a glow behind the page, glass only on bars and pop-ups. Every colour is a setting
+   from tokens.css, so it is the same design in the light theme and the dark one. */
+
+body {
+  background:
+    radial-gradient(900px 540px at 90% -8%, var(--page-glow-a), transparent 62%),
+    radial-gradient(780px 540px at -8% 30%, var(--page-glow-b), transparent 62%),
+    var(--page);
+  background-attachment: fixed;
+}
+
+.app-shell {
+  background: transparent;
+}
+
+/* glass: the top bar, and the pop-up sheet. A solid colour where glass is not possible or not wanted. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid var(--glass-line);
+}
+
+.sheet-backdrop {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.sheet {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-tile) var(--radius-tile) 0 0;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .topbar {
+    background: var(--ink);
+  }
+  .sheet {
+    background: var(--panel-raised);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .topbar {
+    background: var(--ink);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .sheet {
+    background: var(--panel-raised);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* tiles: the big soft containers */
+.home-section,
+.st-group,
+.team-card,
+.final-panel {
+  background: var(--tile);
+  border: 1px solid var(--tile-line);
+  border-radius: var(--radius-tile);
+  padding: 22px;
+  box-shadow: var(--tile-shadow);
+}
+
+.home-section {
+  margin-bottom: var(--space-3);
+}
+
+.home-section-title,
+.st-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--paper);
+}
+
+/* the things inside a tile: lighter, no shadow */
+.pm-card,
+.tile,
+.match-row,
+.rubber-item,
+.bk-match {
+  background: var(--inner);
+  border: 1px solid var(--inner-line);
+  border-radius: var(--radius-inner);
+  box-shadow: none;
+}
+
+.pm-card.pm-live,
+.bk-match.bk-live {
+  background: var(--live-bg);
+  border-color: var(--live-line);
+  box-shadow: var(--live-glow);
+}
+
+/* the winner of a finished match */
+.pm-card.pm-final .pm-win {
+  background: linear-gradient(90deg, var(--win-tint), transparent);
+  border-radius: 10px;
+  margin-left: -6px;
+  padding-left: 6px;
+}
+
+.pm-score {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* a live match has a pulse, the same on every screen */
+.pm-tag-live::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  vertical-align: 1px;
+  border-radius: 50%;
+  background: var(--lamp);
+  box-shadow: 0 0 0 4px var(--win-tint);
+  animation: arena-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes arena-pulse {
+  50% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pm-tag-live::before {
+    animation: none;
+  }
+}
+
+.btn-primary {
+  border-radius: 999px;
+  box-shadow: var(--live-glow);
+}
+
+.btn-ghost,
+.chip,
+input,
+select,
+textarea {
+  border-radius: 14px;
+}
+
+.page-title {
+  letter-spacing: -0.02em;
+}
+
+/* ---- referee scoring ---- */
+
+.team-score-input {
+  font-size: 72px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--inner);
+  border-color: var(--inner-line);
+  border-radius: 20px;
+}
+
+.tap {
+  border-radius: 18px;
+}
+
+.scorer {
+  padding-bottom: 76px;
+}
+
+/* the finish button stays in reach, floating over the bottom of the screen */
+.btn-big {
+  border-radius: 999px;
+  position: sticky;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  z-index: 4;
+}
+
+/* on a phone the team's name gets a whole line, so a long name is never cut in the middle of a word */
+@media (max-width: 520px) {
+  .team-card {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      'name name'
+      'score buttons';
+  }
+  .team-name {
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+}
+
+/* ---- the venue page as a bento: tiles of different sizes where there is room ---- */
+
+.page-home {
+  max-width: 1240px;
+}
+
+@media (min-width: 1000px) {
+  .home {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 18px;
+    align-content: start;
+  }
+  .home > .page-title,
+  .home > .home-updated {
+    grid-column: 1 / -1;
+  }
+  .home-cols,
+  .home-col {
+    display: contents;
+  }
+  .home-section {
+    margin: 0;
+  }
+  .home-col:nth-child(1) .home-section:nth-child(1) {
+    grid-column: span 8;
+    order: 1;
+  }
+  .home-col:nth-child(2) .home-section:nth-child(2) {
+    grid-column: span 4;
+    order: 2;
+  }
+  .home-col:nth-child(1) .home-section:nth-child(2) {
+    grid-column: span 4;
+    order: 3;
+  }
+  .home-col:nth-child(2) .home-section:nth-child(1) {
+    grid-column: span 8;
+    order: 4;
+  }
+  .home-col:nth-child(1) .home-section:nth-child(1) .pm-list,
+  .home-col:nth-child(2) .home-section:nth-child(1) .pm-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+}

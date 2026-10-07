@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#10161a" />
+    <script>
+      /* the theme is set before the page is drawn, so there is no flash of the wrong one */
+      (function () {
+        try {
+          var pref = localStorage.getItem('scoreit-theme');
+          var dark = !window.matchMedia || window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = pref === 'light' || pref === 'dark' ? pref : dark ? 'dark' : 'light';
+          if (/\/tv\/?$/.test(location.pathname)) theme = 'dark';
+          var root = document.documentElement;
+          root.dataset.theme = theme;
+          root.dataset.themePref = pref === 'light' || pref === 'dark' ? pref : 'auto';
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+    <title>ScoreIt by Z2HxRealSolutions</title>
+    <meta name="description" content="ScoreIt is the tournament manager built in Sri Lanka. Brackets that build themselves, a live scoreboard for every spectator, and referees scoring from their phones." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ScoreIt" />
+    <meta property="og:title" content="ScoreIt: record it, view it, score it" />
+    <meta property="og:description" content="The tournament manager built in Sri Lanka. Live brackets, a live scoreboard for every spectator, and referees scoring from their phones." />
+    <meta property="og:url" content="__SITE__/" />
+    <meta property="og:image" content="__SITE__/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ScoreIt: record it, view it, score it, with a live TV scoreboard" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
