@@ -145,6 +145,17 @@
   color: var(--mist-dim);
 }
 
+.pm-sets,
+.bk-sets {
+  font-size: 12px;
+  color: var(--mist-dim);
+  padding: 4px 12px 0;
+}
+
+.pm-sets {
+  padding: 4px 0 0;
+}
+
 /* ---- division tabs ---- */
 
 .tabs {

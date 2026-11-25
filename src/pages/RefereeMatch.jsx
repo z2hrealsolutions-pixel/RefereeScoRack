@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Scorer from '../components/Scorer';
+import SetScorer from '../components/SetScorer';
+import { isSetMatch, setScoresText } from '../lib/gameRules';
 import { rubberLabel } from '../lib/matchTypes';
 import { whenLabel } from '../lib/format';
 import { mineKey, readStored, writeStored } from '../lib/codeStore';
@@ -35,7 +37,7 @@ export default function RefereeMatch() {
       setLoadError('That match could not be found.');
       return null;
     }
-    const [teamsRes, subsRes] = await Promise.all([
+    const [teamsRes, subsRes, setsRes, ruleRes] = await Promise.all([
       supabase
         .from('teams')
         .select('id, name')
@@ -45,7 +47,14 @@ export default function RefereeMatch() {
         .select('id, match_type, slot_number, points_value, team_a_score, team_b_score, winner_team_id, done, last_modified_at')
         .eq('matchup_id', matchupId)
         .order('slot_number'),
+      supabase
+        .from('match_sets')
+        .select('id, set_number, team_a_score, team_b_score, done, winner_team_id')
+        .eq('matchup_id', matchupId)
+        .order('set_number'),
+      supabase.rpc('match_format', { p_matchup_id: matchupId }),
     ]);
+    // the sets and rules arrive with the newer database. Without them a match plays as a single game, as before.
     const err = teamsRes.error || subsRes.error;
     if (err) {
       setLoadError(err.message);
@@ -55,7 +64,13 @@ export default function RefereeMatch() {
     teamsRes.data.forEach((t) => {
       names[t.id] = t.name;
     });
-    const next = { matchup: m, names, subs: subsRes.data };
+    const next = {
+      matchup: m,
+      names,
+      subs: subsRes.data,
+      sets: setsRes.error ? [] : setsRes.data,
+      rule: ruleRes.error ? null : ruleRes.data,
+    };
     setData(next);
     return next;
   }, [matchupId]);
@@ -65,7 +80,7 @@ export default function RefereeMatch() {
   }, [load]);
 
   function handleFatal(detail) {
-    if (detail && detail.error === 'match_finished') {
+    if (detail && (detail.error === 'match_finished' || detail.error === 'set_finished' || detail.error === 'previous_set_not_finished')) {
       load();
       return;
     }
@@ -88,7 +103,7 @@ export default function RefereeMatch() {
         notice:
           result && result.already
             ? 'That match was already finished.'
-            : `Finished: ${nameA} ${result.a} - ${result.b} ${nameB}`,
+            : `Finished: ${nameA} ${result.a} - ${result.b} ${nameB}${result.sets ? ' (sets)' : ''}`,
       },
     });
   }
@@ -117,7 +132,7 @@ export default function RefereeMatch() {
     );
   }
 
-  const { matchup, names, subs } = data;
+  const { matchup, names, subs, sets, rule } = data;
 
   // a match is only scored through the group it belongs to
   const inThisScope = matchup.division_id === divisionId && (matchup.group_id ?? null) === scope.groupId;
@@ -202,6 +217,7 @@ export default function RefereeMatch() {
                   </span>{' '}
                   {nameB}
                 </p>
+                {sets.length > 0 && <p className="muted mono">{setScoresText(sets)}</p>}
                 <p className="muted">{names[subs[0].winner_team_id] ?? ''} won.</p>
               </>
             )
@@ -328,6 +344,29 @@ export default function RefereeMatch() {
     );
   }
 
+  if (isSetMatch(rule)) {
+    return (
+      <div>
+        {header}
+        <SetScorer
+          matchupId={matchupId}
+          code={code}
+          teamA={nameA}
+          teamB={nameB}
+          teamAId={matchup.team_a_id}
+          teamBId={matchup.team_b_id}
+          rule={rule}
+          sets={sets}
+          stage={isKnockout ? matchup.stage : ''}
+          onFinished={handleFinished}
+          onFatal={handleFatal}
+          onActivity={markMine}
+          onReload={load}
+        />
+      </div>
+    );
+  }
+
   const only = subs[0];
   return (
     <div>
@@ -343,6 +382,7 @@ export default function RefereeMatch() {
         initialB={only ? only.team_b_score : null}
         title=""
         isKnockout={isKnockout}
+        rule={rule}
         onFinished={handleFinished}
         onFatal={handleFatal}
         onActivity={markMine}

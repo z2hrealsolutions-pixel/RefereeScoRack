@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { createScoreSync } from '../lib/scoreSync';
 import { describeApiError } from '../lib/errors';
+import { scoreEnds, ruleText } from '../lib/gameRules';
 
 const SYNC_TEXT = {
   saved: 'Saved',
@@ -20,6 +21,9 @@ export default function Scorer({
   initialB,
   title,
   isKnockout,
+  rule = null,
+  setNumber = null,
+  setsNow = null,
   onFinished,
   onFatal,
   onActivity,
@@ -49,6 +53,28 @@ export default function Scorer({
   const onActivityRef = useRef(onActivity);
   onActivityRef.current = onActivity;
 
+  // a set of a best-of match goes to its own function, a single game to the old one
+  function callScore(sa, sb, finish) {
+    if (setNumber) {
+      return supabase.rpc('submit_set_score', {
+        p_matchup_id: matchupId,
+        p_otp: code,
+        p_set_number: setNumber,
+        p_team_a_score: sa,
+        p_team_b_score: sb,
+        p_finish: finish,
+      });
+    }
+    return supabase.rpc('submit_score', {
+      p_matchup_id: matchupId,
+      p_otp: code,
+      p_sub_match_id: subIdRef.current,
+      p_team_a_score: sa,
+      p_team_b_score: sb,
+      p_finish: finish,
+    });
+  }
+
   useEffect(() => {
     const engine = createScoreSync({
       initial: hasInitial ? { a: initialA, b: initialB } : null,
@@ -58,21 +84,14 @@ export default function Scorer({
       },
       send: async ({ a: sa, b: sb }) => {
         if (frozenRef.current) return { ok: true };
-        const { data, error } = await supabase.rpc('submit_score', {
-          p_matchup_id: matchupId,
-          p_otp: code,
-          p_sub_match_id: subIdRef.current,
-          p_team_a_score: sa,
-          p_team_b_score: sb,
-          p_finish: false,
-        });
+        const { data, error } = await callScore(sa, sb, false);
         if (error) {
           const d = describeApiError(error);
           if (d.setup) return { ok: false, fatal: true, error: 'server', message: d.message };
           return { ok: false, message: d.message };
         }
         if (data && data.ok) {
-          subIdRef.current = data.sub_match.id;
+          if (data.sub_match) subIdRef.current = data.sub_match.id;
           return { ok: true };
         }
         return { ok: false, fatal: true, ...(data || {}) };
@@ -130,14 +149,7 @@ export default function Scorer({
     setFinishing(true);
     setFinishError('');
     frozenRef.current = true;
-    const { data, error } = await supabase.rpc('submit_score', {
-      p_matchup_id: matchupId,
-      p_otp: code,
-      p_sub_match_id: subIdRef.current,
-      p_team_a_score: current.current.a,
-      p_team_b_score: current.current.b,
-      p_finish: true,
-    });
+    const { data, error } = await callScore(current.current.a, current.current.b, true);
     setFinishing(false);
 
     if (error) {
@@ -159,8 +171,10 @@ export default function Scorer({
     frozenRef.current = false;
     setConfirming(false);
     const reason = data && data.error;
-    if (reason === 'match_finished') {
+    if (reason === 'match_finished' || reason === 'set_finished') {
       onFinished({ already: true });
+    } else if (reason === 'game_not_over') {
+      setFinishError(`That score is not a finished ${setNumber ? 'set' : 'game'} yet. ${ruleText(data.rule || rule)}`);
     } else if (reason === 'next_round_started') {
       setFinishError('The next match in the bracket has already started, so this result can no longer be changed here. Ask an admin.');
     } else if (reason === 'scores_tied') {
@@ -175,10 +189,15 @@ export default function Scorer({
   const winnerName = a > b ? teamA : teamB;
   const level = a === b;
   const incomplete = aText === '' || bText === '';
+  const unit = setNumber ? 'set' : 'match';
+  const over = scoreEnds(a, b, rule);
+  const notOver = !level && !incomplete && !over;
+  const lastSet = setsNow ? (a > b ? setsNow.a : setsNow.b) + 1 >= setsNow.need : !setNumber;
 
   return (
     <div className="scorer">
       {title && <p className="scorer-title">{title}</p>}
+      {rule && ruleText(rule) && <p className="muted small scorer-rule">{ruleText(rule)}</p>}
 
       {[
         { key: 'a', name: teamA, score: a, text: aText },
@@ -229,30 +248,49 @@ export default function Scorer({
       <button
         type="button"
         className="btn-primary btn-big"
-        disabled={level || finishing || incomplete}
+        disabled={level || finishing || incomplete || (Boolean(rule) && !over)}
         onClick={() => setConfirming(true)}
       >
-        Finish match
+        {setNumber ? `Finish set ${setNumber}` : 'Finish match'}
       </button>
       {level && !incomplete && (
-        <p className="muted small">Scores are level. A match needs a winner before it can finish.</p>
+        <p className="muted small">Scores are level. A {unit} needs a winner before it can finish.</p>
+      )}
+      {notOver && (
+        <p className="muted small">Not finished yet. {ruleText(rule)}</p>
       )}
 
       {confirming && (
         <div className="sheet-backdrop">
           <div className="sheet" role="dialog" aria-modal="true">
-            <h2 className="sheet-title">Finish this match?</h2>
+            <h2 className="sheet-title">{setNumber ? `Finish set ${setNumber}?` : 'Finish this match?'}</h2>
             <p className="sheet-score mono">
               {teamA} {a} - {b} {teamB}
             </p>
             <p className="sheet-text">
-              <strong>{winnerName}</strong> wins.
-              {isKnockout ? ' They move on to the next round.' : ''} Once finished, only an admin can
-              change it.
+              {setNumber ? (
+                lastSet ? (
+                  <>
+                    <strong>{winnerName}</strong> wins the set and the match.
+                    {isKnockout ? ' They move on to the next round.' : ''} Once finished, only an admin can
+                    change it.
+                  </>
+                ) : (
+                  <>
+                    <strong>{winnerName}</strong> wins this set. The next set starts after this.
+                  </>
+                )
+              ) : (
+                <>
+                  <strong>{winnerName}</strong> wins.
+                  {isKnockout ? ' They move on to the next round.' : ''} Once finished, only an admin can
+                  change it.
+                </>
+              )}
             </p>
             {finishError && <div className="callout-error">{finishError}</div>}
             <button type="button" className="btn-primary btn-big" disabled={finishing} onClick={finish}>
-              {finishing ? 'Finishing…' : 'Yes, finish the match'}
+              {finishing ? 'Finishing…' : setNumber ? `Yes, finish set ${setNumber}` : 'Yes, finish the match'}
             </button>
             <button
               type="button"

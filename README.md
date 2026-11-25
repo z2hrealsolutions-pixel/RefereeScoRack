@@ -212,3 +212,9 @@ device (`localStorage`, key `scoreit-theme`), and `index.html` applies it before
   and the example TV board in its first screen stays dark in both themes, as a TV board is: the `force-dark` class in
   `tokens.css` gives any element the dark settings.
 - The look is sport-neutral on purpose: no court or racket drawings, so other sports can join.
+
+## v20: sets and win-by rules (Dinking Divas build)
+
+Needs `scorack_phase1s_rules.sql` applied first. The referee screen reads the match's rules (`match_format`): a game
+cannot be finished until the target is reached and the lead is big enough, and semi finals and finals are scored one
+set at a time (best of 3). Public pages, the bracket and the TV board show the sets won large and each set's score small.

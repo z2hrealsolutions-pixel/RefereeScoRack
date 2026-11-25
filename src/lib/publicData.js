@@ -100,8 +100,18 @@ export function matchResult(match, subs, category) {
   };
 }
 
+// "11-7  9-11  4-2": the sets of a best-of match, finished ones and the one in play, in order
+export function setLine(sets) {
+  return (sets || [])
+    .filter((s) => s.team_a_score !== null && s.team_a_score !== undefined)
+    .slice()
+    .sort((x, y) => x.set_number - y.set_number)
+    .map((s) => `${s.team_a_score}-${s.team_b_score}`)
+    .join('  ');
+}
+
 // What a card on the live board, the home page or a match list needs.
-export function buildCard({ match, subs, division, groupName, names }) {
+export function buildCard({ match, subs, division, groupName, names, sets = [] }) {
   const result = matchResult(match, subs, division ? division.category : 'singles');
   return {
     id: match.id,
@@ -119,6 +129,7 @@ export function buildCard({ match, subs, division, groupName, names }) {
     scoreB: result.scoreB,
     winnerId: result.winnerId,
     detail: result.detail,
+    setLine: setLine(sets),
     scheduledDate: match.scheduled_date || '',
     scheduledTime: match.scheduled_time || '',
     bracketPosition: match.bracket_position ?? 0,

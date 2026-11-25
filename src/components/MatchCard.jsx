@@ -15,6 +15,7 @@ export default function MatchCard({ card, showDivision = true }) {
       </div>
       {side(card.teamA, card.scoreA)}
       {side(card.teamB, card.scoreB)}
+      {card.setLine && <div className="pm-sets mono">Sets: {card.setLine}</div>}
       {card.detail && <div className="pm-detail mono">{card.detail}</div>}
     </div>
   );

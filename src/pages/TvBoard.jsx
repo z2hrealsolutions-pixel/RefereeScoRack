@@ -26,6 +26,7 @@ function Court({ card }) {
         <span className="tv-name">{card.teamB.name}</span>
         <Score value={card.scoreB} />
       </div>
+      {card.setLine && <div className="tv-detail tv-sets mono">{card.setLine}</div>}
       {card.detail && <div className="tv-detail mono">{card.detail}</div>}
     </div>
   );

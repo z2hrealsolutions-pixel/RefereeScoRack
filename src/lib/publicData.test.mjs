@@ -1,5 +1,5 @@
 import {
-  stageSize, stageShort, bracketRounds, statusOf, matchResult, buildCard, bySchedule, groupStandings, signed, categoryLabel,
+  stageSize, stageShort, bracketRounds, statusOf, matchResult, buildCard, bySchedule, groupStandings, signed, categoryLabel, setLine,
 } from './publicData.js';
 
 let passed = 0, failed = 0;
@@ -139,5 +139,24 @@ check('status of a match', statusOf({ status: 'bye' }) === 'bye' && statusOf({ s
   check('the stage column reads the group\'s name, or the knockout round', grp.scope === 'Group B' && ko.scope === 'Round of 16');
 }
 
+// set scores on a card
+{
+  const sets = [
+    { set_number: 2, team_a_score: 9, team_b_score: 11 },
+    { set_number: 1, team_a_score: 11, team_b_score: 7 },
+    { set_number: 3, team_a_score: 4, team_b_score: 2 },
+  ];
+  check('sets read in order, level or not', setLine(sets) === '11-7  9-11  4-2' && setLine([]) === '' && setLine(undefined) === '');
+  const card = buildCard({
+    match: { id: 'm', division_id: 'd', group_id: null, stage: 'Semifinal', status: 'live', team_a_id: 'a', team_b_id: 'b' },
+    subs: [{ slot_number: 1, team_a_score: 1, team_b_score: 0, done: false }],
+    division: { name: 'Precision Divas', category: 'doubles' },
+    names: { a: 'Asha / Mira', b: 'Nila / Sue' },
+    sets: [{ set_number: 1, team_a_score: 11, team_b_score: 6 }],
+  });
+  check('a card carries its set line next to the sets won', card.setLine === '11-6' && card.scoreA === 1 && card.teamA.name === 'Asha / Mira');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
+

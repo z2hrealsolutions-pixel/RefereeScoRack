@@ -9,6 +9,8 @@ const MATCH_COLS =
 const SUB_COLS =
   'id, matchup_id, match_type, slot_number, points_value, team_a_score, team_b_score, winner_team_id, done, last_modified_at';
 
+const SET_COLS = 'matchup_id, set_number, team_a_score, team_b_score, done';
+
 // ids go in the address of the request, so ask for them in batches
 async function inChunks(table, cols, column, ids, size = 80) {
   const unique = [...new Set(ids.filter(Boolean))];
@@ -68,10 +70,11 @@ export async function loadBoard(tenantId, { upcomingLimit = 8, recentLimit = 8 }
     .slice(0, recentLimit);
 
   const everything = [...liveRes.data, ...koUpcoming, ...recent];
-  const [subsRes, teamsRes, groupsRes] = await Promise.all([
+  const [subsRes, teamsRes, groupsRes, setsRes] = await Promise.all([
     inChunks('sub_matches', SUB_COLS, 'matchup_id', everything.map((m) => m.id)),
     inChunks('teams', 'id, name', 'id', everything.flatMap((m) => [m.team_a_id, m.team_b_id])),
     inChunks('groups', 'id, name', 'id', everything.map((m) => m.group_id)),
+    inChunks('match_sets', SET_COLS, 'matchup_id', everything.map((m) => m.id)),
   ]);
   const err2 = subsRes.error || teamsRes.error || groupsRes.error;
   if (err2) return { error: err2.message };
@@ -80,10 +83,13 @@ export async function loadBoard(tenantId, { upcomingLimit = 8, recentLimit = 8 }
   const names = Object.fromEntries(teamsRes.data.map((t) => [t.id, t.name]));
   const groupNames = Object.fromEntries(groupsRes.data.map((g) => [g.id, g.name]));
   const subs = groupBy(subsRes.data, 'matchup_id');
+  // sets only exist on a database with the newer rules, an error here just means no set scores to show
+  const sets = setsRes.error ? {} : groupBy(setsRes.data, 'matchup_id');
   const card = (m) =>
     buildCard({
       match: m,
       subs: subs[m.id] || [],
+      sets: sets[m.id] || [],
       division: divisions[m.division_id],
       groupName: groupNames[m.group_id],
       names,
@@ -118,6 +124,7 @@ export async function loadDivision(divisionId) {
 
   const subsRes = await inChunks('sub_matches', SUB_COLS, 'matchup_id', matchRes.data.map((m) => m.id));
   if (subsRes.error) return { error: subsRes.error.message };
+  const setsRes = await inChunks('match_sets', SET_COLS, 'matchup_id', matchRes.data.map((m) => m.id));
 
   return {
     division: divRes.data,
@@ -125,6 +132,7 @@ export async function loadDivision(divisionId) {
     teams: teamsRes.data,
     matchups: matchRes.data,
     subsByMatch: groupBy(subsRes.data, 'matchup_id'),
+    setsByMatch: setsRes.error ? {} : groupBy(setsRes.data, 'matchup_id'),
     ranking: standRes.data,
   };
 }

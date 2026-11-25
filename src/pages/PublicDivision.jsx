@@ -5,7 +5,7 @@ import { clockTime, loadDivision } from '../lib/board';
 import { POLL_MS } from '../lib/config';
 import { categoryLabel } from '../lib/format';
 import { usePolling } from '../lib/usePolling';
-import { bracketRounds, buildCard, bySchedule, groupStandings, matchResult, signed, statusOf } from '../lib/publicData';
+import { bracketRounds, buildCard, bySchedule, groupStandings, matchResult, setLine, signed, statusOf } from '../lib/publicData';
 
 function Standings({ groups, ranking, league }) {
   // regular groups first, the Playoff (when there is one) last
@@ -155,6 +155,9 @@ function Bracket({ data }) {
                   <div key={match.id} className={`bk-match bk-${status}`} data-status={status}>
                     {slot(match.team_a_id, placeholderA, result.scoreA)}
                     {slot(match.team_b_id, placeholderB, result.scoreB)}
+                    {setLine((data.setsByMatch || {})[match.id]) && (
+                      <div className="bk-sets mono">{setLine((data.setsByMatch || {})[match.id])}</div>
+                    )}
                     {(status === 'live' || status === 'bye' || match.court || match.scheduled_time) && (
                       <div className="bk-foot mono">
                         {status === 'live' && <span className="live">LIVE </span>}
@@ -197,6 +200,7 @@ export default function PublicDivision() {
         buildCard({
           match: m,
           subs: data.subsByMatch[m.id] || [],
+          sets: (data.setsByMatch || {})[m.id] || [],
           division: data.division,
           groupName: groupNames[m.group_id],
           names,
