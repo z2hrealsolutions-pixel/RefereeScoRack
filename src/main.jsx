@@ -7,6 +7,7 @@ import './styles/app.css';
 import './styles/public.css';
 import './styles/tv.css';
 import './styles/arena.css';
+import './styles/brand.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

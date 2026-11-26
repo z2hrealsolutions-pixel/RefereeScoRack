@@ -1,0 +1,83 @@
+/* A tenant's brand kit: its logo, banner and the second colour. The main colour is not here, it changes the
+   settings in tokens.css (see lib/brandTheme.js). The ScoreIt mark (.brand-banner) is never touched by anything in this file. */
+
+.topbar-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.topbar-name-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* a white plate, so a logo reads on the dark theme and the light one whatever colours it was drawn in */
+.tenant-logo-plate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--logo-plate);
+  border-radius: 10px;
+  padding: 3px 8px;
+  box-shadow: 0 0 0 1px var(--logo-plate-line);
+}
+
+.tenant-logo-img {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+}
+
+@media (max-width: 520px) {
+  .tenant-logo-img {
+    height: 24px;
+    max-width: 100px;
+  }
+}
+
+/* the banner across the top of the venue page */
+.tenant-banner {
+  grid-column: 1 / -1;
+  aspect-ratio: 3 / 1;
+  max-height: 260px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-tile);
+  background: var(--soft-inner);
+  box-shadow: 0 0 0 1px var(--tile-line), var(--soft-shadow);
+  margin-bottom: var(--space-3);
+}
+
+.tenant-banner-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* the second colour: a line under the top bar, when the tenant chose one */
+.app-shell[data-branded='true'] .topbar {
+  border-bottom: 3px solid var(--brand-accent);
+}
+
+/* the TV board: the logo beside the tenant's name */
+.tv-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tv-tenant-logo {
+  border-radius: 14px;
+  padding: 6px 16px;
+}
+
+.tv-tenant-logo .tenant-logo-img {
+  height: clamp(30px, 3.6vw, 72px);
+  max-width: 28vw;
+}

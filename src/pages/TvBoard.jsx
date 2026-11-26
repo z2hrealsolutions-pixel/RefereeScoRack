@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import Brand from '../components/Brand';
+import TenantLogo from '../components/TenantLogo';
 import { clockTime, useBoard } from '../lib/board';
 import { TV_POLL_MS } from '../lib/config';
 import { categoryLabel } from '../lib/publicData';
@@ -106,7 +107,10 @@ export default function TvBoard() {
   return (
     <div className="tv">
       <header className="tv-header">
-        <h1 className="tv-title">{tenant.name}</h1>
+        <h1 className="tv-title">
+          <TenantLogo src={tenant.brand && tenant.brand.logoUrl} name={tenant.name} className="tv-tenant-logo" />
+          <span>{tenant.name}</span>
+        </h1>
         <span className="tv-brand">
           <Brand />
         </span>

@@ -55,6 +55,15 @@
   --soft-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 
   --overlay: rgba(8, 11, 13, 0.78);
+
+  /* a tenant's second colour; the same as the main one until a tenant chooses its own (see lib/brandTheme.js) */
+  --brand-accent: var(--lamp);
+  --brand-accent-text: var(--lamp-text);
+  --on-brand-accent: var(--on-lamp);
+
+  /* the plate a tenant's logo sits on */
+  --logo-plate: #ffffff;
+  --logo-plate-line: rgba(255, 255, 255, 0.35);
 }
 
 :root[data-theme='light'] {
@@ -104,6 +113,13 @@
   --soft-shadow: 0 6px 20px rgba(24, 50, 72, 0.07);
 
   --overlay: rgba(230, 238, 244, 0.82);
+
+  --brand-accent: var(--lamp);
+  --brand-accent-text: var(--lamp-text);
+  --on-brand-accent: var(--on-lamp);
+
+  --logo-plate: #ffffff;
+  --logo-plate-line: rgba(18, 40, 56, 0.14);
 }
 
 :root {

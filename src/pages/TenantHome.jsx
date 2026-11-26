@@ -28,6 +28,11 @@ export default function TenantHome() {
 
   return (
     <div className="home">
+      {tenant.brand && tenant.brand.bannerUrl && (
+        <div className="tenant-banner">
+          <img className="tenant-banner-img" src={tenant.brand.bannerUrl} alt={`${tenant.name} banner`} />
+        </div>
+      )}
       <h1 className="page-title">{tenant.name}</h1>
       <p className="home-updated mono muted">
         {error ? 'Reconnecting…' : updatedAt ? `Updates by itself · last ${clockTime(updatedAt)}` : 'Loading…'}

@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Link, Outlet, useMatch, useParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Brand from './Brand';
 import ThemeToggle from './ThemeToggle';
+import TenantLogo from './TenantLogo';
+import { brandCss } from '../lib/brandTheme';
+import { loadTenantBrand } from '../lib/tenantBrand';
 
 export default function TenantGate() {
   const { slug } = useParams();
@@ -26,12 +29,31 @@ export default function TenantGate() {
           setLoadError(error.message);
           return;
         }
-        setTenant(data);
+        if (!data) {
+          setTenant(data);
+          return;
+        }
+        // the tenant's brand kit comes with it, so the page never shows the ScoreIt colours first
+        loadTenantBrand(data.id).then((brand) => {
+          if (isMounted) setTenant({ ...data, brand });
+        });
       });
     return () => {
       isMounted = false;
     };
   }, [slug]);
+
+  // the tenant's two colours, on the whole page while this tenant is open. Gone again when it is left.
+  const brandColours = tenant && tenant.brand ? { primary: tenant.brand.primary, accent: tenant.brand.accent } : null;
+  useLayoutEffect(() => {
+    const css = brandColours ? brandCss(brandColours) : '';
+    if (!css) return undefined;
+    const el = document.createElement('style');
+    el.id = 'tenant-brand-style';
+    el.textContent = css;
+    document.head.appendChild(el);
+    return () => el.remove();
+  }, [brandColours && brandColours.primary, brandColours && brandColours.accent]);
 
   if (loadError) {
     return (
@@ -64,10 +86,11 @@ export default function TenantGate() {
   if (isTv) return <Outlet context={{ tenant }} />;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-branded={brandColours && brandColours.accent ? 'true' : undefined}>
       <header className="topbar">
         <Link to={`/${tenant.slug}`} className="topbar-name">
-          {tenant.name}
+          <TenantLogo src={tenant.brand && tenant.brand.logoUrl} name={tenant.name} />
+          <span className="topbar-name-text">{tenant.name}</span>
         </Link>
         <div className="topbar-right">
           <Brand />
