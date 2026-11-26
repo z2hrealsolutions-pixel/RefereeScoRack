@@ -103,6 +103,9 @@ export default function TvBoard() {
   }, []);
 
   const live = data ? data.live : [];
+  const banner = tenant.brand && tenant.brand.bannerUrl;
+  // while matches are on court the banner is a slim strip; between matches it fills the empty space
+  const idle = loaded && live.length === 0;
 
   return (
     <div className="tv">
@@ -119,12 +122,25 @@ export default function TvBoard() {
         </span>
       </header>
 
+      {banner && !idle && (
+        <div className="tv-banner-strip">
+          <img src={banner} alt="" />
+        </div>
+      )}
+
       <section className="tv-live">
         <h2 className="tv-h mono">ON COURT NOW</h2>
         {!loaded ? (
           <p className="tv-empty">Loading…</p>
         ) : live.length === 0 ? (
-          <p className="tv-empty">No matches on court right now</p>
+          banner ? (
+            <div className="tv-banner-hero">
+              <img src={banner} alt={`${tenant.name} banner`} />
+              <p className="tv-empty">No matches on court right now</p>
+            </div>
+          ) : (
+            <p className="tv-empty">No matches on court right now</p>
+          )
         ) : (
           <div className="tv-courts">
             {live.map((c) => (
